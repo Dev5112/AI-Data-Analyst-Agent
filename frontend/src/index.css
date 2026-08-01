@@ -1,0 +1,34 @@
+@import "tailwindcss";
+
+@theme {
+  --color-primary: #4f46e5;
+  --color-secondary: #7c3aed;
+  --color-accent: #06b6d4;
+  
+  --radius-xl: 16px;
+  --animate-spin-slow: spin 3s linear infinite;
+}
+
+@layer base {
+  body {
+    background-color: var(--color-slate-900);
+    color: var(--color-slate-50);
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  }
+}
+
+/* Light Mode Overrides for Tailwind v4 standard variables */
+.light {
+  --color-slate-900: #e2e8f0; /* slate-200 */
+  --color-slate-800: #cbd5e1; /* slate-300 */
+  --color-slate-700: #94a3b8; /* slate-400 */
+  --color-slate-500: #475569;
+  --color-slate-400: #334155;
+  --color-slate-300: #1e293b;
+  --color-slate-200: #0f172a;
+  --color-slate-50: #0f172a;
+  --color-white: #0f172a;
+  
+  /* Text inverse */
+  --color-indigo-400: #4f46e5;
+}
