@@ -59,9 +59,9 @@ GEMINI_KEYS = [os.getenv(f"gemini_api_{i}") for i in range(1, 11)]
 GEMINI_KEYS = [k for k in GEMINI_KEYS if k]
 
 MODEL_HIERARCHY = [
-    "gemini-2.0-flash-lite",
-    "gemini-2.0-flash",
-    "gemini-2.5-flash"
+    "gemini-3.5-flash-lite",
+    "gemini-3.5-flash",
+    "gemini-3.5-pro"
 ]
 
 MAX_RETRIES_PER_KEY = 2
@@ -441,7 +441,7 @@ def plot_to_base64(max_bytes=100000):
 # LLM agent setup
 # -----------------------------
 # llm = ChatGoogleGenerativeAI(
-#     model=os.getenv("GOOGLE_MODEL", "gemini-2.5-pro"),
+#     model=os.getenv("GOOGLE_MODEL", "gemini-3.5-pro"),
 #     temperature=0,
 #     google_api_key=os.getenv("GOOGLE_API_KEY")
 # )
@@ -1001,7 +1001,7 @@ async def check_llm_keys_models():
 
     results = []
     # we will stop early if we find a working combo but still record attempts
-    for model in (_MODEL_HIERARCHY or ["gemini-2.5-pro"]):
+    for model in (_MODEL_HIERARCHY or ["gemini-3.5-pro"]):
         # test keys in parallel for this model
         tasks = []
         for key in _GEMINI_KEYS:
