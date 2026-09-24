@@ -56,7 +56,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
             <img src="https://i.pravatar.cc/150?u=a042581f4e29026704d" alt="Profile" className="w-full h-full object-cover" />
           </div>
           <div className="text-center">
-             <div className="text-[10px] font-bold text-white tracking-wide">Alex Carter</div>
+             <div className="text-[10px] font-bold text-white tracking-wide">Dev</div>
              <div className="text-[9px] text-slate-500">Level 4 Analyst</div>
           </div>
         </div>
