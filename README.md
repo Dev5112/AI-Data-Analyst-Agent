@@ -2,7 +2,7 @@
 
 A powerful, autonomous data analyst that answers complex queries on your datasets using Gemini AI and pandas, packaged with a beautiful, modern React frontend.
 
-![Frontend Preview](./frontend-preview.jpg)
+![Frontend Preview](./frontend-preview.png)
 
 ## ✨ Features
 
