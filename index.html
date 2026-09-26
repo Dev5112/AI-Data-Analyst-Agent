@@ -4,129 +4,545 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>TDS Data Analyst Agent</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
-  * { margin:0; padding:0; box-sizing:border-box; }
-  body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    line-height: 1.6; color:#f5f5f5;
-    background: linear-gradient(135deg,#1e1e2f 0%,#2a2a3d 100%);
-    min-height:100vh;
-  }
-  .container { max-width:1200px; margin:0 auto; padding:20px; }
-  .header { text-align:center; margin-bottom:30px; color:#fff; }
-  .header h1 { font-size:2.5rem; margin-bottom:10px; text-shadow:2px 2px 4px rgba(0,0,0,.6); }
-  .header p { font-size:1.1rem; opacity:.85; }
-  .main-card {
-    background:#2c2c3e; border-radius:15px; box-shadow:0 10px 30px rgba(0,0,0,.4);
-    padding:30px; margin-bottom:30px;
-  }
-  .form-group label { display:block; margin-bottom:8px; font-weight:600; color:#ddd; }
-  .file-input {
-    width:100%; padding:15px; border:2px dashed #555; border-radius:8px;
-    background:#1f1f2e; cursor:pointer; transition:.3s ease; text-align:center; position:relative;
-    color:#bbb;
-  }
-  .file-input:hover { border-color:#667eea; background:#2a2a40; color:#fff; }
-  .file-info { margin-top:10px; padding:10px; background:#333; border-radius:5px; font-size:14px; color:#a8c7ff; display:none; }
-  .btn {
-    background:linear-gradient(135deg,#667eea 0%,#764ba2 100%); color:#fff; border:none;
-    padding:15px 30px; border-radius:8px; font-size:16px; font-weight:600; cursor:pointer; transition:.3s ease; width:100%;
-  }
-  .btn:hover { transform:translateY(-2px); box-shadow:0 5px 15px rgba(102,126,234,.6); }
-  .btn:disabled { background:#555; cursor:not-allowed; transform:none; box-shadow:none; }
-  .btn-secondary { background:#444; color:#ddd; }
-  .button-group { display:flex; gap:10px; margin-top:20px; flex-wrap:wrap; }
-  .loading { display:none; text-align:center; padding:20px; }
-  .spinner {
-    border:4px solid #444; border-top:4px solid #667eea; border-radius:50%;
-    width:40px; height:40px; animation:spin 1s linear infinite; margin:0 auto 15px;
-  }
-  @keyframes spin { 0%{transform:rotate(0)} 100%{transform:rotate(360deg)} }
-  .results { display:none; margin-top:30px; }
-  .result-item { background:#1f1f2e; border-left:4px solid #667eea; padding:20px; margin-bottom:20px; border-radius:0 8px 8px 0; }
-  .question { font-weight:600; color:#fff; margin-bottom:15px; font-size:1.1rem; }
-  .answer { color:#ccc; line-height:1.6; }
-  .answer pre {
-    background:#2c2c3e; color:#eee;
-  }
-  .answer img {
-    max-width:100%; height:auto; border-radius:8px; margin:10px 0;
-    box-shadow:0 4px 8px rgba(0,0,0,.5); cursor:pointer; transition:transform .3s ease;
-  }
-  .answer img:hover { transform:scale(1.02); }
-  .error { background:#3b1f1f; border-left-color:#dc3545; color:#ffb3b3; }
-  .modal { display:none; position:fixed; z-index:1000; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,.9); }
-  .modal-content { margin:auto; display:block; width:80%; max-width:700px; max-height:80%; object-fit:contain; }
-  .close { position:absolute; top:15px; right:35px; color:#f1f1f1; font-size:40px; font-weight:bold; cursor:pointer; }
-  .close:hover { color:#bbb; }
-  @media (max-width:768px){
-    .container{padding:10px}
-    .header h1{font-size:2rem}
-    .main-card{padding:20px}
-    .button-group{flex-direction:column}
-    .btn-secondary{width:100%}
-  }
-</style>
+    :root {
+      --bg-color: #0b0f19;
+      --sidebar-bg: #111524;
+      --card-bg: #181d2f;
+      --text-main: #f3f4f6;
+      --text-muted: #9ca3af;
+      --border-color: #2a2f45;
+      --primary: #4f46e5;
+      --primary-hover: #4338ca;
+      --pill-bg: #1f2937;
+      --pill-hover: #374151;
+      --dropzone-bg: #111827;
+      --dropzone-border: #374151;
+    }
+    
+    * { margin:0; padding:0; box-sizing:border-box; font-family: 'Inter', sans-serif; }
+    
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      display: flex;
+      min-height: 100vh;
+    }
+
+    /* Sidebar */
+    .sidebar {
+      width: 250px;
+      background-color: var(--sidebar-bg);
+      border-right: 1px solid var(--border-color);
+      display: flex;
+      flex-direction: column;
+      padding: 20px;
+    }
+    .logo {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: #818cf8;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 40px;
+    }
+    .nav-item {
+      padding: 10px 15px;
+      border-radius: 8px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: var(--text-muted);
+      font-weight: 500;
+      margin-bottom: 5px;
+      transition: all 0.2s;
+    }
+    .nav-item.active {
+      background-color: rgba(79, 70, 229, 0.1);
+      color: #818cf8;
+    }
+    .nav-item:hover:not(.active) {
+      background-color: rgba(255, 255, 255, 0.05);
+      color: var(--text-main);
+    }
+    .sidebar-bottom {
+      margin-top: auto;
+    }
+
+    /* Main Content */
+    .main-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .topbar {
+      padding: 20px 40px;
+      border-bottom: 1px solid var(--border-color);
+      color: var(--text-muted);
+      font-size: 0.9rem;
+    }
+    .topbar span.active { color: var(--text-main); }
+
+    .content-area {
+      padding: 40px;
+      max-width: 1200px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    /* Hero Section */
+    .hero {
+      text-align: center;
+      margin-bottom: 50px;
+    }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background-color: rgba(79, 70, 229, 0.1);
+      color: #818cf8;
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      margin-bottom: 20px;
+    }
+    .hero h1 {
+      font-size: 2.5rem;
+      font-weight: 700;
+      margin-bottom: 15px;
+    }
+    .hero p {
+      color: var(--text-muted);
+      font-size: 1.1rem;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    /* Layout Cards */
+    .cards-container {
+      display: grid;
+      grid-template-columns: 1fr 1.5fr;
+      gap: 20px;
+    }
+
+    .card {
+      background-color: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 25px;
+      display: flex;
+      flex-direction: column;
+    }
+    .card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+    .card-title {
+      font-weight: 600;
+      font-size: 1.1rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .card-subtitle {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      margin-bottom: 10px;
+    }
+
+    /* Dropzone */
+    .dropzone {
+      border: 2px dashed var(--dropzone-border);
+      background-color: var(--dropzone-bg);
+      border-radius: 8px;
+      padding: 40px 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+    .dropzone:hover {
+      border-color: var(--primary);
+    }
+    .dropzone svg {
+      width: 40px;
+      height: 40px;
+      color: var(--text-muted);
+      margin-bottom: 15px;
+    }
+    .dropzone p {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+    }
+    .dropzone p strong {
+      color: #818cf8;
+      font-weight: 500;
+    }
+    .dropzone-footer {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-top: 15px;
+    }
+    
+    #data_file { display: none; }
+
+    /* Textarea */
+    .textarea-wrapper {
+      position: relative;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+    textarea {
+      width: 100%;
+      height: 150px;
+      background-color: var(--dropzone-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 15px;
+      color: var(--text-main);
+      font-size: 0.95rem;
+      resize: none;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    textarea:focus {
+      border-color: var(--primary);
+    }
+    textarea::placeholder {
+      color: #6b7280;
+    }
+
+    .pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 15px;
+    }
+    .pill {
+      background-color: var(--pill-bg);
+      border: 1px solid var(--border-color);
+      color: var(--text-muted);
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .pill:hover {
+      background-color: var(--pill-hover);
+      color: var(--text-main);
+    }
+
+    /* Footer / Actions */
+    .action-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 25px;
+    }
+    .shortcut {
+      color: var(--text-muted);
+      font-size: 0.85rem;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .key {
+      background-color: var(--pill-bg);
+      padding: 2px 6px;
+      border-radius: 4px;
+      border: 1px solid var(--border-color);
+      font-size: 0.75rem;
+    }
+    .btn-primary {
+      background-color: var(--primary);
+      color: white;
+      border: none;
+      padding: 10px 24px;
+      border-radius: 8px;
+      font-weight: 500;
+      font-size: 0.95rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-primary:hover {
+      background-color: var(--primary-hover);
+    }
+    .btn-primary:disabled {
+      opacity: 0.7;
+      cursor: not-allowed;
+    }
+
+    /* Results */
+    .results-container {
+      margin-top: 40px;
+      display: none;
+    }
+    .result-item {
+      background-color: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 25px;
+      margin-bottom: 20px;
+    }
+    .question {
+      font-weight: 600;
+      font-size: 1.1rem;
+      margin-bottom: 15px;
+      color: #818cf8;
+    }
+    .answer {
+      color: var(--text-muted);
+      line-height: 1.6;
+    }
+    .answer pre {
+      background: var(--dropzone-bg);
+      padding: 15px;
+      border-radius: 8px;
+      overflow-x: auto;
+      margin-top: 10px;
+    }
+    .answer img {
+      max-width: 100%;
+      border-radius: 8px;
+      margin-top: 15px;
+    }
+  </style>
 </head>
 <body>
-  <div class="container">
-    <div class="header">
-      <h1>🤖 TDS Data Analyst Agent</h1>
-      <p>Upload your questions file and optional dataset to get intelligent answers with visualizations</p>
+
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div class="logo">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg>
+      AI Analyst
+    </div>
+    
+    <div class="nav-item active">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+      New Analysis
     </div>
 
-    <div class="main-card">
-      <form id="analysisForm">
-        <!-- Questions file (REQUIRED) -->
-        <div class="form-group">
-          <label for="questions_file">Questions File (.txt) <span style="color:#dc3545">*</span></label>
-          <div class="file-input-wrapper">
-            <div class="file-input" id="questionsDrop">
-              <input type="file" id="questions_file" name="questions_file" accept=".txt"/>
-              <span>📁 Click to upload your questions (.txt)</span>
-            </div>
-          </div>
-          <div id="questionsInfo" class="file-info"></div>
-        </div>
-
-        <!-- Dataset file (OPTIONAL) -->
-        <div class="form-group">
-          <label for="data_file">Upload Dataset (Optional)</label>
-          <div class="file-input-wrapper">
-            <div class="file-input" id="dataDrop">
-              <input type="file" id="data_file" name="data_file" accept=".csv,.xlsx,.xls,.json,.parquet,.txt"/>
-              <span>📁 Click or drag & drop your dataset</span>
-            </div>
-          </div>
-          <div id="dataInfo" class="file-info"></div>
-        </div>
-
-        <div class="button-group">
-          <button type="submit" class="btn" id="submitBtn">🚀 Analyze Data</button>
-          <button type="button" class="btn btn-secondary" id="clearBtn">🗑️ Clear</button>
-        </div>
-      </form>
-
-      <div class="loading" id="loading">
-        <div class="spinner"></div>
-        <p>Analyzing your data... This may take a few moments.</p>
+    <div class="sidebar-bottom">
+      <div class="nav-item">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+        Light Mode
       </div>
-
-      <div class="results" id="results">
-        <h3>📊 Analysis Results</h3>
-        <div id="resultsContent"></div>
+      <div class="nav-item">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        Settings
       </div>
     </div>
   </div>
 
-  <!-- Image Modal -->
-  <div id="imageModal" class="modal">
-    <span class="close">&times;</span>
-    <img class="modal-content" id="modalImage" alt="Visualization"/>
+  <!-- Main Content -->
+  <div class="main-content">
+    <div class="topbar">
+      Workspace / <span class="active">New Analysis</span>
+    </div>
+    
+    <div class="content-area">
+      <div class="hero">
+        <div class="badge">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3 7 7 3-7 3-3 7-3-7-7-3 7-3z"/></svg>
+          Powered by Gemini AI
+        </div>
+        <h1>Analyze Your Data Instantly</h1>
+        <p>Upload your dataset and ask questions in plain English. Get back insights, visualizations, and clean data within seconds.</p>
+      </div>
+
+      <div class="cards-container">
+        <!-- Left Card -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#818cf8" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+              Data Source
+            </div>
+          </div>
+          <div class="card-subtitle">Upload Dataset</div>
+          
+          <div class="dropzone" id="dropzone">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 16V8M12 8L9 11M12 8L15 11M3 15C3 17.7614 5.23858 20 8 20H16C18.7614 20 21 17.7614 21 15C21 12.5183 19.1911 10.4578 16.8049 10.0892C16.4026 6.64364 13.4934 4 10 4C7.03961 4 4.54583 6.00949 3.86435 8.75056C2.26127 9.27877 1.1092 10.8256 1.1092 12.6364C1.1092 14.8876 2.93392 16.7123 5.18509 16.7123"/></svg>
+            <p><strong>Click to upload</strong> or drag and drop</p>
+            <p style="font-size:0.8rem; margin-top:5px;">.csv, .xls, .xlsx, .json, .txt, .parquet</p>
+            <input type="file" id="data_file" accept=".csv,.xlsx,.xls,.json,.parquet,.txt" />
+          </div>
+          
+          <div id="file-info" style="display:none; text-align:center; margin-top:15px; color:#818cf8; font-size:0.9rem;"></div>
+          
+          <div class="dropzone-footer">
+            Supported: CSV, Excel, JSON, Parquet. Leave empty to query external data.
+          </div>
+        </div>
+
+        <!-- Right Card -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#818cf8" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+              Your Questions
+            </div>
+            <div style="font-size:0.8rem; color:var(--text-muted);" id="charCount">0/2000</div>
+          </div>
+          
+          <div class="textarea-wrapper">
+            <textarea id="questionsText" placeholder="Ask questions about your data...&#10;e.g. - What is the total revenue?&#10;- Plot the sales distribution over time."></textarea>
+            
+            <div class="pills">
+              <div class="pill">What is the overall trend in the dataset?</div>
+              <div class="pill">Can you create a bar chart of sales by region?</div>
+              <div class="pill">Are there any outliers in the data?</div>
+            </div>
+          </div>
+          
+          <div class="action-row">
+            <div class="shortcut">
+              Press <span class="key">⌘</span> + <span class="key">Enter</span> to submit
+            </div>
+            <button class="btn-primary" id="submitBtn">Start Analyzing</button>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Results Section -->
+      <div class="results-container" id="resultsContainer">
+        <h3 style="margin-bottom:20px; color:var(--text-main);">Analysis Results</h3>
+        <div id="resultsContent"></div>
+      </div>
+      
+    </div>
   </div>
 
   <script>
-    /* ---------- Image normalization helpers ---------- */
+    // Elements
+    const dropzone = document.getElementById('dropzone');
+    const dataFileInput = document.getElementById('data_file');
+    const fileInfo = document.getElementById('file-info');
+    const questionsText = document.getElementById('questionsText');
+    const charCount = document.getElementById('charCount');
+    const submitBtn = document.getElementById('submitBtn');
+    const pills = document.querySelectorAll('.pill');
+    const resultsContainer = document.getElementById('resultsContainer');
+    const resultsContent = document.getElementById('resultsContent');
+
+    // Drag and Drop
+    dropzone.addEventListener('click', () => dataFileInput.click());
+    
+    dropzone.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      dropzone.style.borderColor = '#4f46e5';
+    });
+    
+    dropzone.addEventListener('dragleave', (e) => {
+      e.preventDefault();
+      dropzone.style.borderColor = '#374151';
+    });
+    
+    dropzone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      dropzone.style.borderColor = '#374151';
+      if (e.dataTransfer.files.length) {
+        dataFileInput.files = e.dataTransfer.files;
+        updateFileInfo();
+      }
+    });
+
+    dataFileInput.addEventListener('change', updateFileInfo);
+
+    function updateFileInfo() {
+      if (dataFileInput.files.length > 0) {
+        const file = dataFileInput.files[0];
+        fileInfo.style.display = 'block';
+        fileInfo.textContent = `Selected: ${file.name} (${(file.size / 1024).toFixed(1)} KB)`;
+      }
+    }
+
+    // Textarea handling
+    questionsText.addEventListener('input', () => {
+      const len = questionsText.value.length;
+      charCount.textContent = `${len}/2000`;
+      if (len > 2000) {
+        questionsText.value = questionsText.value.substring(0, 2000);
+        charCount.textContent = `2000/2000`;
+      }
+    });
+
+    // Pills click
+    pills.forEach(pill => {
+      pill.addEventListener('click', () => {
+        const current = questionsText.value;
+        const add = pill.textContent;
+        questionsText.value = current ? current + '\n' + add : add;
+        questionsText.dispatchEvent(new Event('input'));
+      });
+    });
+
+    // Shortcut Ctrl+Enter or Cmd+Enter
+    questionsText.addEventListener('keydown', (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
+        e.preventDefault();
+        submitAnalysis();
+      }
+    });
+
+    submitBtn.addEventListener('click', submitAnalysis);
+
+    async function submitAnalysis() {
+      const qText = questionsText.value.trim();
+      if (!qText) {
+        alert("Please enter some questions to analyze.");
+        return;
+      }
+      
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Analyzing...';
+      resultsContainer.style.display = 'none';
+      resultsContent.innerHTML = '';
+
+      try {
+        const formData = new FormData();
+        
+        // Convert text to file blob because backend requires a file
+        const blob = new Blob([qText], { type: 'text/plain' });
+        formData.append('questions_file', blob, 'questions.txt');
+        
+        if (dataFileInput.files.length > 0) {
+          formData.append('data_file', dataFileInput.files[0]);
+        }
+
+        const response = await fetch('/api', {
+          method: 'POST',
+          body: formData
+        });
+
+        if (!response.ok) {
+          const err = await response.json();
+          throw new Error(err.detail || 'HTTP Error ' + response.status);
+        }
+
+        const data = await response.json();
+        displayResults(data);
+      } catch (err) {
+        displayError(err.message);
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Start Analyzing';
+      }
+    }
+
     function normalizeImageData(answer) {
       let s = null;
       if (typeof answer === 'string') { s = answer.trim(); }
@@ -135,163 +551,71 @@
         if (typeof s === 'string') s = s.trim();
       }
       if (!s) return null;
-
       s = s.replace(/^data:aimage\//i, 'data:image/');
-
       if (/^data:image\//i.test(s)) return s;
-
       const base64Like = /^[A-Za-z0-9+/=\r\n]+$/.test(s) && s.length > 200 && !/\s{2,}/.test(s);
       if (base64Like) return 'data:image/png;base64,' + s;
-
       return null;
     }
 
-    function renderAnswerInto(answer, container, onImageClick) {
-      const maybeImg = normalizeImageData(answer);
-      if (maybeImg) {
-        const img = document.createElement('img');
-        img.src = maybeImg;
-        img.alt = 'Generated visualization';
-        img.addEventListener('click', () => onImageClick(maybeImg));
-        container.appendChild(img);
+    function displayResults(data) {
+      resultsContainer.style.display = 'block';
+      if (data.error) {
+        displayError(data.error);
         return;
       }
-      const text = (answer && typeof answer === 'object') ? JSON.stringify(answer, null, 2) : String(answer ?? '');
-      if (text.includes('\n') || text.length > 120) {
-        const pre = document.createElement('pre');
-        pre.style.whiteSpace = 'pre-wrap';
-        pre.style.background = '#f8f9fa';
-        pre.style.padding = '15px';
-        pre.style.borderRadius = '5px';
-        pre.style.overflow = 'auto';
-        pre.textContent = text;
-        container.appendChild(pre);
-      } else {
-        container.textContent = text;
-      }
-    }
-
-    /* ---------------- App ---------------- */
-    class DataAnalystApp {
-      constructor() {
-        this.form = document.getElementById('analysisForm');
-        this.qFileInput = document.getElementById('questions_file');
-        this.dFileInput = document.getElementById('data_file');
-        this.qDrop = document.getElementById('questionsDrop');
-        this.dDrop = document.getElementById('dataDrop');
-        this.qInfo = document.getElementById('questionsInfo');
-        this.dInfo = document.getElementById('dataInfo');
-        this.submitBtn = document.getElementById('submitBtn');
-        this.clearBtn = document.getElementById('clearBtn');
-        this.loading = document.getElementById('loading');
-        this.results = document.getElementById('results');
-        this.resultsContent = document.getElementById('resultsContent');
-        this.modal = document.getElementById('imageModal');
-        this.modalImage = document.getElementById('modalImage');
-        this.closeModal = document.querySelector('.close');
-        this.initEventListeners();
-      }
-
-      initEventListeners() {
-        this.form.addEventListener('submit', (e) => this.handleSubmit(e));
-        this.clearBtn.addEventListener('click', () => this.clearForm());
-        this.qFileInput.addEventListener('change', (e) => this.handleFileSelect(e, 'q'));
-        this.dFileInput.addEventListener('change', (e) => this.handleFileSelect(e, 'd'));
-        this.closeModal.addEventListener('click', () => this.hideImageModal());
-        this.modal.addEventListener('click', (e) => { if (e.target === this.modal) this.hideImageModal(); });
-        this.setupDrop(this.dDrop, (files) => { if (files && files.length > 0) { this.dFileInput.files = files; this.handleFileSelect({ target: { files } }, 'd'); } });
-        this.setupDrop(this.qDrop, (files) => { if (files && files.length > 0) { this.qFileInput.files = files; this.handleFileSelect({ target: { files } }, 'q'); } });
-      }
-
-      setupDrop(zone, onDropFiles) {
-        zone.addEventListener('dragover', (e) => { e.preventDefault(); zone.style.borderColor = '#667eea'; });
-        zone.addEventListener('dragleave', (e) => { e.preventDefault(); zone.style.borderColor = '#e1e5e9'; });
-        zone.addEventListener('drop', (e) => { e.preventDefault(); zone.style.borderColor = '#e1e5e9'; onDropFiles(e.dataTransfer.files); });
-      }
-
-      handleFileSelect(event, type) {
-        const file = event.target.files[0];
-        if (type === 'q') {
-          if (file) { this.qInfo.innerHTML = `<strong>Questions:</strong> ${file.name} (${(file.size / 1024).toFixed(2)} KB)`; this.qInfo.style.display = 'block'; }
-          else { this.qInfo.style.display = 'none'; }
+      Object.entries(data).forEach(([q, a]) => {
+        const div = document.createElement('div');
+        div.className = 'result-item';
+        
+        const qEl = document.createElement('div');
+        qEl.className = 'question';
+        qEl.textContent = q;
+        div.appendChild(qEl);
+        
+        const aEl = document.createElement('div');
+        aEl.className = 'answer';
+        
+        const maybeImg = normalizeImageData(a);
+        if (maybeImg) {
+          const img = document.createElement('img');
+          img.src = maybeImg;
+          aEl.appendChild(img);
         } else {
-          if (file) { this.dInfo.innerHTML = `<strong>Dataset:</strong> ${file.name} (${(file.size / 1024).toFixed(2)} KB)`; this.dInfo.style.display = 'block'; }
-          else { this.dInfo.style.display = 'none'; }
-        }
-      }
-
-      async handleSubmit(event) {
-        event.preventDefault();
-        if (!this.qFileInput.files[0]) { alert('Please upload your questions .txt file.'); return; }
-        this.showLoading(); this.hideResults();
-
-        try {
-          const formData = new FormData();
-          formData.append('questions_file', this.qFileInput.files[0]);
-          if (this.dFileInput.files[0]) formData.append('data_file', this.dFileInput.files[0]);
-
-          const response = await fetch('/api', { method:'POST', body:formData }); // changed endpoint
-
-          if (!response.ok) {
-            let msg = `HTTP ${response.status}`;
-            try { const err = await response.json(); if (err && err.detail) msg = err.detail; } catch {}
-            throw new Error(msg);
+          const text = (a && typeof a === 'object') ? JSON.stringify(a, null, 2) : String(a ?? '');
+          if (text.includes('\n') || text.length > 100) {
+            const pre = document.createElement('pre');
+            pre.textContent = text;
+            aEl.appendChild(pre);
+          } else {
+            aEl.textContent = text;
           }
-
-          const data = await response.json();
-          this.displayResults(data);
-        } catch (err) {
-          console.error('Analysis failed:', err);
-          this.displayError(err.message || 'Unknown error');
-        } finally {
-          this.hideLoading();
         }
-      }
-
-      displayResults(data) {
-        this.resultsContent.innerHTML = '';
-        if (data.error) { this.displayError(data.error); return; }
-        Object.entries(data).forEach(([question, answer]) => {
-          const item = document.createElement('div');
-          item.className = 'result-item';
-          const qDiv = document.createElement('div');
-          qDiv.className = 'question';
-          qDiv.textContent = question;
-          const aDiv = document.createElement('div');
-          aDiv.className = 'answer';
-          renderAnswerInto(answer, aDiv, (src) => this.showImageModal(src));
-          item.appendChild(qDiv); item.appendChild(aDiv);
-          this.resultsContent.appendChild(item);
-        });
-        this.showResults(); this.scrollToResults();
-      }
-
-      displayError(message) {
-        this.resultsContent.innerHTML = '';
-        const item = document.createElement('div');
-        item.className = 'result-item error';
-        const title = document.createElement('div');
-        title.className = 'question';
-        title.textContent = '❌ Error';
-        const content = document.createElement('div');
-        content.className = 'answer';
-        content.textContent = message;
-        item.appendChild(title); item.appendChild(content);
-        this.resultsContent.appendChild(item);
-        this.showResults(); this.scrollToResults();
-      }
-
-      showImageModal(src) { this.modalImage.src = src; this.modal.style.display = 'block'; document.body.style.overflow = 'hidden'; }
-      hideImageModal() { this.modal.style.display = 'none'; document.body.style.overflow = 'auto'; }
-      showLoading() { this.loading.style.display = 'block'; this.submitBtn.disabled = true; this.submitBtn.textContent = '⏳ Analyzing...'; }
-      hideLoading() { this.loading.style.display = 'none'; this.submitBtn.disabled = false; this.submitBtn.textContent = '🚀 Analyze Data'; }
-      showResults() { this.results.style.display = 'block'; }
-      hideResults() { this.results.style.display = 'none'; }
-      scrollToResults() { setTimeout(() => this.results.scrollIntoView({ behavior:'smooth', block:'start' }), 100); }
-      clearForm() { this.qFileInput.value = ''; this.dFileInput.value = ''; this.qInfo.style.display = 'none'; this.dInfo.style.display = 'none'; this.hideResults(); this.hideLoading(); }
+        
+        div.appendChild(aEl);
+        resultsContent.appendChild(div);
+      });
     }
 
-    document.addEventListener('DOMContentLoaded', () => { new DataAnalystApp(); });
+    function displayError(msg) {
+      resultsContainer.style.display = 'block';
+      const div = document.createElement('div');
+      div.className = 'result-item';
+      div.style.borderColor = '#ef4444';
+      
+      const qEl = document.createElement('div');
+      qEl.className = 'question';
+      qEl.style.color = '#ef4444';
+      qEl.textContent = 'Error';
+      
+      const aEl = document.createElement('div');
+      aEl.className = 'answer';
+      aEl.textContent = msg;
+      
+      div.appendChild(qEl);
+      div.appendChild(aEl);
+      resultsContent.appendChild(div);
+    }
   </script>
 </body>
 </html>

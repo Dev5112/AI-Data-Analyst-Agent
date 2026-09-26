@@ -1,34 +1,25 @@
 import os
-import networkx as nx
-import re
-import json
-import base64
-import tempfile
 import sys
-import pandas as pd
-import numpy as np
-import matplotlib.pyplot as plt
-import seaborn as sns
-import io
-import os
 import re
 import json
 import base64
 import tempfile
 import subprocess
 import logging
+import io
 from io import BytesIO
 from typing import Dict, Any, List
-from fastapi import FastAPI, UploadFile, File, HTTPException
-from fastapi.responses import JSONResponse
-from fastapi.responses import JSONResponse, HTMLResponse
-from fastapi import FastAPI
-from dotenv import load_dotenv
 
 import requests
+import networkx as nx
 import pandas as pd
-import matplotlib.pyplot as plt
 import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+from fastapi import FastAPI, UploadFile, File, HTTPException
+from fastapi.responses import JSONResponse, HTMLResponse
+from dotenv import load_dotenv
 
 # Optional image conversion
 try:
@@ -52,7 +43,6 @@ app = FastAPI(title="TDS Data Analyst Agent")
 # -------------------- Robust Gemini LLM with fallback --------------------
 from collections import defaultdict
 import time
-from langchain_google_genai import ChatGoogleGenerativeAI
 
 # Config
 GEMINI_KEYS = [os.getenv(f"gemini_api_{i}") for i in range(1, 11)]
@@ -106,9 +96,7 @@ class LLMWithFallback:
             llms.append(ChatGoogleGenerativeAI(model=self.models[0], temperature=self.temperature, google_api_key="dummy"))
         return llms[0].with_fallbacks(llms[1:]).invoke(prompt)
 
-
 LLM_TIMEOUT_SECONDS = int(os.getenv("LLM_TIMEOUT_SECONDS", 240))
-
 
 @app.get("/", response_class=HTMLResponse)
 async def serve_frontend():
@@ -118,7 +106,6 @@ async def serve_frontend():
             return HTMLResponse(content=f.read())
     except FileNotFoundError:
         return HTMLResponse(content="<h1>Frontend not found</h1><p>Please ensure index.html is in the same directory as app.py</p>", status_code=404)
-
 
 def parse_keys_and_types(raw_questions: str):
     """
@@ -140,9 +127,6 @@ def parse_keys_and_types(raw_questions: str):
     type_map = {key: type_map_def.get(t.lower(), str) for key, t in matches}
     keys_list = [k for k, _ in matches]
     return keys_list, type_map
-
-
-
 
 # -----------------------------
 # Tools
@@ -226,7 +210,6 @@ def scrape_url_to_dataframe(url: str) -> Dict[str, Any]:
 
     except Exception as e:
         return {"status": "error", "message": str(e)}
-
 
 # -----------------------------
 # Utilities for executing code safely
@@ -319,7 +302,6 @@ def scrape_url_to_dataframe(url: str) -> Dict[str, Any]:
             "columns": list(df.columns)
         }
 '''
-
 
 def write_and_run_temp_python(code: str, injected_pickle: str = None, timeout: int = 60) -> Dict[str, Any]:
     """
@@ -436,18 +418,10 @@ def plot_to_base64(max_bytes=100000):
         except Exception:
             pass
 
-
 # -----------------------------
-# LLM agent setup
+# Initialize LLM agent
 # -----------------------------
-# llm = ChatGoogleGenerativeAI(
-#     model=os.getenv("GOOGLE_MODEL", "gemini-3.5-pro"),
-#     temperature=0,
-#     google_api_key=os.getenv("GOOGLE_API_KEY")
-# )
-# -------------------- Initialize LLM --------------------
 llm = LLMWithFallback(temperature=0)
-# -----------------------------
 
 # Tools list for agent (LangChain tool decorator returns metadata for the LLM)
 tools = [scrape_url_to_dataframe]  # we only expose scraping as a tool; agent will still produce code
@@ -493,67 +467,9 @@ agent_executor = AgentExecutor(
     return_intermediate_steps=False
 )
 
-
 # -----------------------------
 # Runner: orchestrates agent -> pre-scrape inject -> execute
 # -----------------------------
-def run_agent_safely(llm_input: str) -> Dict:
-    """
-    1. Run the agent_executor.invoke to get LLM output
-    2. Extract JSON, get 'code' and 'questions'
-    3. Detect scrape_url_to_dataframe("...") calls in code, run them here, pickle df and inject before exec
-    4. Execute the code in a temp file and return results mapping questions -> answers
-    """
-    try:
-        response = agent_executor.invoke({"input": llm_input}, {"timeout": LLM_TIMEOUT_SECONDS})
-        raw_out = response.get("output") or response.get("final_output") or response.get("text") or ""
-        if not raw_out:
-            return {"error": f"Agent returned no output. Full response: {response}"}
-
-        parsed = clean_llm_output(raw_out)
-        if "error" in parsed:
-            return parsed
-
-        if not isinstance(parsed, dict) or "code" not in parsed or "questions" not in parsed:
-            return {"error": f"Invalid agent response format: {parsed}"}
-
-        code = parsed["code"]
-        questions: List[str] = parsed["questions"]
-
-        # Detect scrape calls; find all URLs used in scrape_url_to_dataframe("URL")
-        urls = re.findall(r"scrape_url_to_dataframe\(\s*['\"](.*?)['\"]\s*\)", code)
-        pickle_path = None
-        if urls:
-            # For now support only the first URL (agent may code multiple scrapes; you can extend this)
-            url = urls[0]
-            tool_resp = scrape_url_to_dataframe(url)
-            if tool_resp.get("status") != "success":
-                return {"error": f"Scrape tool failed: {tool_resp.get('message')}"}
-            # create df and pickle it
-            df = pd.DataFrame(tool_resp["data"])
-            temp_pkl = tempfile.NamedTemporaryFile(suffix=".pkl", delete=False)
-            temp_pkl.close()
-            df.to_pickle(temp_pkl.name)
-            pickle_path = temp_pkl.name
-            # Make sure agent's code can reference df/data: we will inject the pickle loader in the temp script
-
-        # Execute code in temp python script
-        exec_result = write_and_run_temp_python(code, injected_pickle=pickle_path, timeout=LLM_TIMEOUT_SECONDS)
-        if exec_result.get("status") != "success":
-            return {"error": f"Execution failed: {exec_result.get('message', exec_result)}", "raw": exec_result.get("raw")}
-
-        # exec_result['result'] should be results dict
-        results_dict = exec_result.get("result", {})
-        # Map to original questions (they asked to use exact question strings)
-        output = {}
-        for q in questions:
-            output[q] = results_dict.get(q, "Answer not found")
-        return output
-
-    except Exception as e:
-        logger.exception("run_agent_safely failed")
-        return {"error": str(e)}
-
 
 from fastapi import Request
 
@@ -689,7 +605,6 @@ async def analyze_data(request: Request):
         logger.exception("analyze_data failed")
         raise HTTPException(500, detail=str(e))
 
-
 def run_agent_safely_unified(llm_input: str, pickle_path: str = None) -> Dict:
     """
     Runs the LLM agent and executes code.
@@ -742,10 +657,8 @@ def run_agent_safely_unified(llm_input: str, pickle_path: str = None) -> Dict:
         logger.exception("run_agent_safely_unified failed")
         return {"error": str(e)}
 
-
     
 from fastapi.responses import FileResponse, Response
-import base64, os
 
 # 1×1 transparent PNG fallback (if favicon.ico file not present)
 _FAVICON_FALLBACK_PNG = base64.b64decode(
@@ -772,8 +685,6 @@ async def analyze_get_info():
 
     })
 
-
-
 # -----------------------------
 # System Diagnostics
 # -----------------------------
@@ -789,11 +700,6 @@ import socket
 import platform
 import psutil
 import shutil
-import tempfile
-import os
-import time 
-from fastapi import FastAPI, HTTPException
-from fastapi.responses import JSONResponse, HTMLResponse    
 
 # ---- Configuration for diagnostics (tweak as needed) ----
 DIAG_NETWORK_TARGETS = {
@@ -1103,7 +1009,6 @@ async def diagnose(full: bool = Query(False, description="If true, run extended 
 
     report["elapsed_seconds"] = (datetime.utcnow() - started).total_seconds()
     return report
-
 
 if __name__ == "__main__":
     import uvicorn
